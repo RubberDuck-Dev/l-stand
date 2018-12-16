@@ -1,10 +1,60 @@
 import React, { Component } from "react";
+import "../src/App.css";
+import Button from "./components/btn";
+import SetTomorrowValues from "./components/setTomorrowValues";
+import WeatherForecast from "./components/WeatherForecast";
+import YesterdayStats from "./components/YesterdayStats";
+//import Alert from "./components/Alert";
+
+// const btn = require('./btn');
 
 var weatherTypeArray = ["Sunny", "Mostly Sunny", "Mostly Cloudy", "Rainy"];
 
+/*
+To figure out:
+Can i pass state = "this.state" into another component and parse it then,
+or does it have to be price=this.state.price, cost=this.state.cost, etc.
+*/
+
+/*
+GAME ELEMENTS
+TO DOs:
+- Factor in CAT/Random Events
+  -lemonade spoiling
+
+  - Logging daily results
+  - chart demand/rev/profit/inventory/cash on hand over time
+
+- timed? limit to a certain # of days
+  - high score tracked across users
+*/
+
+// let results = {
+//   day1: {
+//     demand,
+//     revenue,
+//     profit,
+//     weather
+//   },
+//   day2: {
+//     demand,
+//     revenue,
+//     profit,
+//     weather
+//   },
+//   day3: {
+//     demand,
+//     revenue,
+//     profit,
+//     weather
+//   }
+// };
+
+/* every day, array.push() to add the next object */
+
 const initialState = {
   day: 1,
-  cash: 20.0,
+  cash: 10.0,
   lemonade_inventory: 0,
   lemonade_cost: 0.5,
   lemonade_price: 0.75,
@@ -19,7 +69,17 @@ const initialState = {
   alertmessage: "",
   valueChanged: false,
   isNegative: false,
-  showModalVal: false
+  showModalVal: false,
+  historicResults: {},
+  cupsBought: {
+    1: {
+      inventoryBought: 0,
+      mktPrice: 0,
+      marginCommitted: 0,
+      dailyTotBought: 0
+    }
+  },
+  dailyTotBought: 0
 };
 
 function ReturnRandomRange(min, max) {
@@ -80,7 +140,7 @@ class App extends Component {
   SetWeatherCondition() {
     //weather type
     var WTypeMin = 0;
-    var WTypeMax = weatherTypeArray.length;
+    var WTypeMax = weatherTypeArray.length - 1;
 
     var TomorrowWeatherTypeSeed = ReturnRandomRange(WTypeMin, WTypeMax);
 
@@ -93,8 +153,8 @@ class App extends Component {
     var TomorrowWeatherTemp = ReturnRandomRange(WTMin, WTMax);
 
     //lemonade costs
-    var LCMin = 0.1;
-    var LCMax = 1.0;
+    var LCMin = 0.25;
+    var LCMax = 1.75;
     var currentLemonadeCost = ReturnRandomRange(LCMin, LCMax);
 
     this.setState({
@@ -105,9 +165,16 @@ class App extends Component {
   }
 
   incrementInventory(amt) {
-    //1,5,10,All
+    /*passing in 'this.props' button data and parse out the values from there.
+      intention is to be more robust so that you can use the Button Component for more than function.
+    */
 
-    if ((this.state.cash - this.state.lemonade_cost * amt).toFixed(2) < 0) {
+    //1,5,10,All
+    const amtPurchased = parseFloat(amt.name);
+
+    if (
+      (this.state.cash - this.state.lemonade_cost * amtPurchased).toFixed(2) < 0
+    ) {
       var SetAlertVisible = true;
       var SetAlertMessage = "Not enough cash!";
 
@@ -119,13 +186,33 @@ class App extends Component {
       return;
     }
 
-    this.setState({
-      lemonade_inventory: this.state.lemonade_inventory + +amt,
-      cash: this.state.cash - this.state.lemonade_cost * amt
-    });
+    /*Cannot pass in duplicate keys to object,
+  how to: add a 'daily total' of cups bought */
+
+    let currentCupsBought = {
+      ...this.state.cupsBought,
+      [this.state.day]: {
+        inventoryBought: +amtPurchased,
+        mktPrice: this.state.lemonade_cost,
+        marginCommitted: amtPurchased * this.state.lemonade_cost,
+        dailyTotBought: this.state.dailyTotBought + +amtPurchased
+      }
+    };
+
+    this.setState(
+      {
+        lemonade_inventory: this.state.lemonade_inventory + +amtPurchased,
+        cash: this.state.cash - this.state.lemonade_cost * amtPurchased,
+        cupsBought: currentCupsBought,
+        dailyTotBought: this.state.dailyTotBought + +amtPurchased
+      }
+      //,() => console.log(this.state.cupsBought)
+    );
   }
 
-  RunNextDay() {
+  RunNextDay(btn) {
+    //console.log(btn);
+
     var IncrementDay = this.state.day + 1;
 
     //calculate cups sold
@@ -153,17 +240,34 @@ class App extends Component {
       totCupsSold = 0;
     }
 
-    this.setState({
-      day: IncrementDay,
-      inventorySold: totCupsSold,
-      lemonade_inventory: +this.state.lemonade_inventory - totCupsSold,
-      inventoryRevenue: +totCupsSold * +this.state.lemonade_price,
-      lemonadeDemand: currentDemand,
-      cash: +this.state.cash + +totCupsSold * +this.state.lemonade_price,
-      alertvisible: false,
-      alertmessage: "",
-      valueChanged: false
-    });
+    let updatedHistoricResults = {
+      ...this.state.historicResults,
+      ["Day" + this.state.day]: {
+        demand: currentDemand,
+        cupSold: totCupsSold,
+        price: this.state.lemonade_price,
+        revenue: this.state.lemonade_price * totCupsSold,
+        weather_temp: this.state.weather_temperature.day,
+        weather_type: this.state.weather_type
+      }
+    };
+
+    this.setState(
+      {
+        day: IncrementDay,
+        inventorySold: totCupsSold,
+        lemonade_inventory: +this.state.lemonade_inventory - totCupsSold,
+        inventoryRevenue: +totCupsSold * +this.state.lemonade_price,
+        lemonadeDemand: currentDemand,
+        cash: +this.state.cash + +totCupsSold * +this.state.lemonade_price,
+        alertvisible: false,
+        alertmessage: "",
+        valueChanged: false,
+        historicResults: updatedHistoricResults,
+        dailyTotBought: 0
+      }
+      //() => console.log(this.state.historicResults)
+    );
 
     //Set tomorrow's weather forecast
     this.SetWeatherCondition();
@@ -179,9 +283,9 @@ class App extends Component {
   render() {
     return (
       <div>
-        <h1>Lemonade Stand</h1>
+        <div className="header">Lemonade Stand</div>
         <div className="container">
-          <div className="card-group">
+          <div className="item item-1">
             <YesterdayStats
               lemonadeDemand={this.state.lemonadeDemand}
               inventoryRevenue={this.state.inventoryRevenue}
@@ -190,6 +294,8 @@ class App extends Component {
               highlightChange={this.highlightChange}
               isNegative={this.state.isNegative}
             />
+          </div>
+          <div className="item item-2">
             <SetTomorrowValues
               day={this.state.day}
               cash={this.state.cash}
@@ -205,273 +311,53 @@ class App extends Component {
               highlightChange={this.highlightChange}
               isNegative={this.state.isNegative}
             />
-
+          </div>
+          <div className="item item-3">
             <WeatherForecast
               weather_type={this.state.weather_type}
               weather_temperature={this.state.weather_temperature}
               RunNextDay={this.RunNextDay}
             />
+          </div>
+          <div className="item">
+            Daily Amt Bought: {this.state.dailyTotBought}
+            {Object.keys(this.state.cupsBought).map(key => {
+              return (
+                <div>
+                  <p>
+                    Cups Bought:
+                    <span>{this.state.cupsBought[key].inventoryBought}</span>
+                  </p>
+                </div>
+              );
+            })}
+          </div>
 
+          {/* let currentCupsBought = {
+              ...this.state.cupsBought,
+              [this.state.day]: {
+                inventoryBought: +amtPurchased,
+                mktPrice: this.state.lemonade_cost,
+                marginCommitted: amtPurchased * this.state.lemonade_cost,
+                dailyTotBought: this.state.dailyTotBought + +amtPurchased
+              }
+    }; */}
+
+          <div className="item">
             <BankruptModal
               show={this.state.showModalVal}
               handleClose={this.hideModal}
               onClick={this.ResetValues}
             />
-
-            {/* BankrupcyButton */}
-            <div className="row">
-              <div className="col">
-                <div className="card card-sm">
-                  <div className="card-body">
-                    <div
-                      className="btn btn-danger btn-sm"
-                      onClick={this.showModal}
-                    >
-                      Declare Bankruptcy
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
-        </div>
-      </div>
-    );
-  }
-}
-
-class YesterdayStats extends Component {
-  render() {
-    return (
-      <div className="row">
-        <div className="col">
-          <div className="card card-sm">
-            <div className="card-body">
-              <h5 className="card-title">
-                <u>Yesterday Stats</u>
-              </h5>
-              <div className="card-text">
-                <b>Demand</b>
-                <p className="card-text text-right">
-                  {Number(this.props.lemonadeDemand).toFixed(0)}
-                </p>
-              </div>
-              <div className="card-text">
-                <b>Cups Sold</b>
-                <p className=" card-text text-right">
-                  {Number(this.props.inventorySold).toFixed(0)}
-                </p>
-              </div>
-              <div className="card-text">
-                <b>Revenue</b>
-                <p className="card-text text-right">
-                  ${Number(this.props.inventoryRevenue).toFixed(2)}
-                </p>
-              </div>
-            </div>
+          {/* BankrupcyButton */}
+          <div className="item ">
+            <Button
+              className="bankrupt"
+              message="Declare Bankruptcy"
+              runFunction={this.showModal}
+            />
           </div>
-        </div>
-      </div>
-    );
-  }
-}
-
-class SetTomorrowValues extends Component {
-  render() {
-    return (
-      <div>
-        <div className="row">
-          <div className="col">
-            <div className="card card-sm">
-              <div className="card-body">
-                <h5 className="card-title">
-                  <u>Day #{this.props.day}</u>
-                </h5>
-                <div>Cash on Hand: ${Number(this.props.cash).toFixed(2)}</div>
-                <div>
-                  Inventory: {Number(this.props.lemonade_inventory).toFixed(0)}
-                </div>
-                <div>
-                  Cost per Cup: ${Number(this.props.lemonade_cost).toFixed(2)}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="row">
-          <div className="col">
-            <div className="card card-sm">
-              <div className="card-body">
-                <h6 className="card-title">Sale Price</h6>
-                <b
-                  className={
-                    this.props.valueChanged
-                      ? "animated card card-text text-center"
-                      : "card card-text text-center"
-                  }
-                  style={
-                    this.props.valueChanged
-                      ? {
-                          backgroundColor: "#FFFF00"
-                        }
-                      : { backgroundColor: "transparent" }
-                  }
-                  //className="card text-center"
-                >
-                  ${Number(this.props.lemonade_price).toFixed(2)}
-                </b>
-                <div className="form-group">
-                  <input
-                    type="range"
-                    id="start"
-                    name="saleprice"
-                    min="0"
-                    max="1.5"
-                    step="0.01"
-                    className="form-control-range"
-                    onChange={this.props.handlePriceSlide}
-                  />
-                </div>
-                <div>
-                  <b>Margin</b>
-                  <p
-                    className="card-text text-center"
-                    style={
-                      this.props.isNegative === true
-                        ? {
-                            color: "#f44242"
-                          }
-                        : { color: "#000000" }
-                    }
-                    onChange={this.props.handlePriceSlide}
-                  >
-                    $
-                    {(
-                      Number(this.props.lemonade_price) -
-                      Number(this.props.lemonade_cost)
-                    ).toFixed(2)}
-                  </p>
-                </div>
-                <div>
-                  <b>Potential Revenue</b>
-                  <p className="card-text text-center">
-                    $
-                    {(
-                      Number(this.props.lemonade_price) *
-                      Number(this.props.lemonade_inventory)
-                    ).toFixed(2)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="row">
-          <div className="col">
-            <div className="card card-sm">
-              <div className="card-body">
-                <h6 className="card-title">
-                  <u>Buy Ingredients</u>
-                </h6>
-                <div className="btn-group">
-                  <button
-                    className="btn btn-info btn-sm"
-                    onClick={this.props.incrementInventory.bind(this, 1)}
-                  >
-                    [1]
-                  </button>
-                  <button
-                    className="btn btn-info btn-sm"
-                    onClick={this.props.incrementInventory.bind(this, 5)}
-                  >
-                    [5]
-                  </button>
-                  <button
-                    className="btn btn-info btn-sm"
-                    onClick={this.props.incrementInventory.bind(this, 10)}
-                  >
-                    [10]
-                  </button>
-                  <button
-                    className="btn btn-info btn-sm"
-                    onClick={this.props.incrementInventory.bind(
-                      this,
-                      Number(this.props.cash) / Number(this.props.lemonade_cost)
-                    )}
-                  >
-                    MAX [
-                    {(
-                      Number(this.props.cash) / Number(this.props.lemonade_cost)
-                    ).toFixed(0)}
-                    ]
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <Alert
-          alertmessage={this.props.alertmessage}
-          alertvisible={this.props.alertvisible}
-          onDismiss={this.props.onDismiss}
-        />
-      </div>
-    );
-  }
-}
-
-class WeatherForecast extends Component {
-  render() {
-    return (
-      <div className="row">
-        <div className="col">
-          <div className="card card-sm">
-            <div className="card-body">
-              <h6 className="card-title">
-                <u>Weather Forecast</u>
-              </h6>
-              <div className="card-text">Type: {this.props.weather_type}</div>
-              <div className="card-text">
-                Temperature: {this.props.weather_temperature}
-              </div>
-              <div
-                className="btn btn-info btn-sm"
-                onClick={this.props.RunNextDay}
-              >
-                Next Day >>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-}
-
-class Alert extends Component {
-  render() {
-    return (
-      <div className="row">
-        <div className="col">
-          {this.props.alertvisible === true ? (
-            <div
-              color="info"
-              className="alert alert-danger alert-dismissible fade show"
-              role="alert"
-            >
-              {this.props.alertmessage}
-              <button
-                className="close"
-                onClick={this.props.onDismiss.bind(this, "alertvisible")}
-              >
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-          ) : (
-            <div />
-          )}
         </div>
       </div>
     );
@@ -503,12 +389,12 @@ const BankruptModal = ({ handleClose, show, onClick }) => {
             </button>
           </div>
           <div className="modal-footer">
-            <button type="button" className="btn btn-primary" onClick={onClick}>
+            <button type="button" className="btn" onClick={onClick}>
               Yes
             </button>
             <button
               type="button"
-              className="btn btn-secondary"
+              className="btn"
               data-dismiss="modal"
               onClick={handleClose}
             >
