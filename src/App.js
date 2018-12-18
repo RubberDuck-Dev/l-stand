@@ -4,6 +4,8 @@ import Button from "./components/btn";
 import SetTomorrowValues from "./components/setTomorrowValues";
 import WeatherForecast from "./components/WeatherForecast";
 import YesterdayStats from "./components/YesterdayStats";
+import ChartJS from "./components/chart";
+
 //import Alert from "./components/Alert";
 
 // const btn = require('./btn');
@@ -52,6 +54,35 @@ TO DOs:
 
 /* every day, array.push() to add the next object */
 
+// const InitialState = {
+//   day: 1,
+//   cash: 10,
+//   weather: {
+//     label: "Sunny",
+//     temp: 75
+//   },
+//   product: {
+//     inventory: 0,
+//     cost: 0.5,
+//     price: 0.75,
+//     sold: 0
+//   },
+//   interface: {
+//     alertvisible: false,
+//     alertmessage: "",
+//     valueChanged: false,
+//     isNegative: false,
+//     showModalVal: false
+//   }
+// };
+
+// // hence each day is pushed onto GameData array
+// var GameData = [InitialState];
+
+// /// get last state of gamedata
+// // so then you can render the 'next day' weather forecast, etc.
+// this.state = GameData[GameData.length];
+
 const initialState = {
   day: 1,
   cash: 10.0,
@@ -90,7 +121,7 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    this.state = initialState;
+    this.state = initialState; //{ GameData: initialState, GameInterface: intialinterface };
 
     this.SetWeatherCondition = this.SetWeatherCondition.bind(this);
     this.incrementInventory = this.incrementInventory.bind(this);
@@ -217,7 +248,7 @@ class App extends Component {
 
     //calculate cups sold
     var BCMin = 1;
-    var BCMax = 100;
+    var BCMax = 50;
 
     var baseCupsSold = ReturnRandomRange(BCMin, BCMax);
 
@@ -252,6 +283,37 @@ class App extends Component {
       }
     };
 
+    // chartData = {};
+
+    // updateChartData = { ...chartData };
+    // Object.keys(updatedHistoricResults).map(key=>console.log(key)
+
+    // const chartData = {
+    //   labels: [this.state.cupsBought[day]],
+    //   datasets: [Object.keys(this.state.cupsBought).map(key=> key)]
+    //     {
+    //       label: "CupsBoughtPerDay",
+    //       data: [this.state.cupsBought[DAY].dailyTotBought],
+    //       backgroundColor: [
+    //         'rgba(255, 99, 132, 0.2)',
+    //         'rgba(54, 162, 235, 0.2)',
+    //         'rgba(255, 206, 86, 0.2)',
+    //         'rgba(75, 192, 192, 0.2)',
+    //         'rgba(153, 102, 255, 0.2)',
+    //         'rgba(255, 159, 64, 0.2)'
+    //     ],
+    //     borderColor: [
+    //         'rgba(255,99,132,1)',
+    //         'rgba(54, 162, 235, 1)',
+    //         'rgba(255, 206, 86, 1)',
+    //         'rgba(75, 192, 192, 1)',
+    //         'rgba(153, 102, 255, 1)',
+    //         'rgba(255, 159, 64, 1)'
+    //     ],
+    //     borderWidth: 1
+    // }]
+    // };
+
     this.setState(
       {
         day: IncrementDay,
@@ -283,6 +345,7 @@ class App extends Component {
   render() {
     return (
       <div>
+        {/* <ChartJS /> */}
         <div className="header">Lemonade Stand</div>
         <div className="container">
           <div className="item item-1">
@@ -320,13 +383,18 @@ class App extends Component {
             />
           </div>
           <div className="item">
-            Daily Amt Bought: {this.state.dailyTotBought}
             {Object.keys(this.state.cupsBought).map(key => {
               return (
                 <div>
                   <p>
+                    Day Bought:
+                    <span>{[key]}</span>
+                  </p>
+                  <p>
                     Cups Bought:
-                    <span>{this.state.cupsBought[key].inventoryBought}</span>
+                    <span>
+                      {this.state.cupsBought[key].dailyTotBought.toFixed(0)}
+                    </span>
                   </p>
                 </div>
               );
