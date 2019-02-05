@@ -16,7 +16,6 @@ class SetTomorrowValues extends Component {
             Cost per Cup: ${Number(this.props.lemonade_cost).toFixed(2)}
           </div>
         </div>
-
         <div className="item">
           <div className="subheader">Sale Price</div>
           <b
@@ -74,7 +73,6 @@ class SetTomorrowValues extends Component {
             </p>
           </div>
         </div>
-
         <div className="item">
           <div className="subheader">Buy Ingredients</div>
           <div className="btn-grp">
@@ -104,11 +102,15 @@ class SetTomorrowValues extends Component {
             />
           </div>
         </div>
-        <Alert
-          alertmessage={this.props.alertmessage}
-          alertvisible={this.props.alertvisible}
-          onDismiss={this.props.onDismiss}
-        />
+        (
+        {/* {this.state.moneyonhand >= 0 && (
+          <Alert
+            alertmessage={this.props.alertmessage}
+            alertvisible={this.props.alertvisible}
+            onDismiss={this.props.onDismiss}
+          />
+        )} */}
+        )
       </div>
     );
   }

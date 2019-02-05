@@ -1,0 +1,176 @@
+body,
+.btn {
+  font-family: "Indie Flower", cursive;
+}
+
+:root {
+  --yellow: #f4e842;
+  --red: #f76e38;
+  --black: #383128;
+}
+.header {
+  display: grid;
+  background-color: var(--yellow);
+  color: var(--black);
+  font-size: 40px;
+
+  border: 2px solid var(--red);
+  border-radius: 10px;
+
+  grid-template-columns: 4fr;
+  grid-template-rows: 0.5fr;
+
+  align-content: center;
+  justify-content: center;
+}
+
+.subheader {
+  display: grid;
+  grid-template-columns: 1fr;
+  background-color: var(--yellow);
+  color: var(--black);
+  font-size: 25px;
+
+  border: 2px solid var(--red);
+  border-radius: 10px;
+}
+
+.container {
+  display: grid;
+  background-color: var(--yellow);
+  color: var(--black);
+
+  border: 2px solid var(--red);
+  border-radius: 10px;
+
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 1fr 0.33fr 0.33fr;
+  grid-gap: 10px;
+
+  align-content: center;
+  justify-content: center;
+}
+
+.item {
+  color: var(--black);
+
+  border: 2px solid var(--red);
+  border-radius: 10px;
+
+  display: grid;
+  grid-template: 1fr;
+  align-content: top;
+  justify-content: center;
+}
+
+.col-2 .subhdr-title {
+  height: 50px;
+  width: 350px;
+  background-color: var(--yellow);
+  color: var(--black);
+  font-size: 32px;
+  font-weight: bold;
+
+  border: 2px solid var(--red);
+  border-radius: 10px;
+}
+
+.col-2 {
+  font-size: 24px;
+}
+.col-2 span {
+  color: var(--black);
+}
+
+.col-2 .deets {
+  padding: 5px;
+  margin-left: 100px;
+  width: 35px;
+}
+
+.col-2 .lbl {
+  padding: 5px;
+  width: 150px;
+  font-weight: bold;
+}
+
+.col-2 .item {
+  width: 250px;
+  border: 1px solid red;
+}
+
+.col-2 .subhdr-title {
+  height: 50px;
+  width: 350px;
+  background-color: var(--yellow);
+  color: var(--black);
+  font-size: 32px;
+  font-weight: bold;
+
+  border: 2px solid var(--red);
+  border-radius: 10px;
+}
+
+.col-3 {
+  font-size: 24px;
+}
+.col-3 span {
+  color: var(--black);
+}
+
+.col-3 .deets {
+  padding: 5px;
+  margin-left: 100px;
+  width: 35px;
+}
+
+.col-3 .deets .type-1 {
+  padding: 5px;
+  margin-left: 100px;
+  width: 35px;
+  height: 100px;
+}
+
+.col-3 .lbl {
+  padding: 5px;
+  width: 150px;
+  font-weight: bold;
+}
+
+.col-3 .item {
+  width: 250px;
+  border: 1px solid red;
+}
+
+.btn {
+  background-color: #2971e5;
+}
+
+.btn-grp button {
+  border-right: none;
+
+  background-color: #2971e5;
+}
+
+.btn-grp button:hover {
+  background-color: #6193e2;
+}
+
+button:hover {
+  background-color: #6193e2;
+}
+
+.toggled {
+  color: #fff;
+}
+
+.bankrupt {
+  background: #fc532d;
+  height: 100px;
+
+  align-content: center;
+}
+
+.bankrupt:hover {
+  background: #ef866e;
+}
